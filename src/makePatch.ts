@@ -7,9 +7,9 @@ import {
   mkdirpSync,
   mkdirSync,
   realpathSync,
+  removeSync,
   writeFileSync,
 } from "fs-extra"
-import { sync as rimraf } from "rimraf"
 import { dirSync } from "tmp"
 import { gzipSync } from "zlib"
 import { applyPatch } from "./applyPatches"
@@ -254,11 +254,11 @@ export function makePatch({
       })
 
     // remove nested node_modules just to be safe
-    rimraf(join(tmpRepoPackagePath, "node_modules"))
+    removeSync(join(tmpRepoPackagePath, "node_modules"))
     // remove .git just to be safe
-    rimraf(join(tmpRepoPackagePath, ".git"))
+    removeSync(join(tmpRepoPackagePath, ".git"))
     // remove patch-package state file
-    rimraf(join(tmpRepoPackagePath, STATE_FILE_NAME))
+    removeSync(join(tmpRepoPackagePath, STATE_FILE_NAME))
 
     // commit the package
     console.info(chalk.grey("•"), "Diffing your files with clean files")
@@ -292,17 +292,17 @@ export function makePatch({
     git("commit", "--allow-empty", "-m", "init")
 
     // replace package with user's version
-    rimraf(tmpRepoPackagePath)
+    removeSync(tmpRepoPackagePath)
 
     // pnpm installs packages as symlinks, copySync would copy only the symlink
     copySync(realpathSync(packagePath), tmpRepoPackagePath)
 
     // remove nested node_modules just to be safe
-    rimraf(join(tmpRepoPackagePath, "node_modules"))
+    removeSync(join(tmpRepoPackagePath, "node_modules"))
     // remove .git just to be safe
-    rimraf(join(tmpRepoPackagePath, ".git"))
+    removeSync(join(tmpRepoPackagePath, ".git"))
     // remove patch-package state file
-    rimraf(join(tmpRepoPackagePath, STATE_FILE_NAME))
+    removeSync(join(tmpRepoPackagePath, STATE_FILE_NAME))
 
     // also remove ignored files like before
     removeIgnoredFiles(tmpRepoPackagePath, includePaths, excludePaths)
@@ -346,7 +346,7 @@ export function makePatch({
 
   Your changes involve creating symlinks. patch-package does not yet support
   symlinks.
-  
+
   ️Please use ${chalk.bold("--include")} and/or ${chalk.bold(
           "--exclude",
         )} to narrow the scope of your patch if
@@ -365,18 +365,18 @@ export function makePatch({
         )
         console.log(`
 ⛔️ ${chalk.red.bold("ERROR")}
-        
+
   patch-package was unable to read the patch-file made by git. This should not
   happen.
-  
+
   A diagnostic file was written to
-  
+
     ${outPath}
-  
+
   Please attach it to a github issue
-  
+
     https://github.com/ds300/patch-package/issues/new?title=New+patch+parse+failed&body=Please+attach+the+diagnostic+file+by+dragging+it+into+here+🙏
-  
+
   Note that this diagnostic file will contain code from the package you were
   attempting to patch.
 
